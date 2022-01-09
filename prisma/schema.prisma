@@ -1,0 +1,81 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Collaborator {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  email     String    @unique
+  fullname  String?
+  role      Role      @default(DEV)
+  projects  Project[]
+
+  @@map("collaborators")
+}
+
+model Project {
+  id            Int            @id @default(autoincrement())
+  createdAt     DateTime       @default(now())
+  title         String         @unique
+  lead          String?
+  collaborators Collaborator[]
+
+  @@map("projects")
+}
+
+model Task {
+  id          Int        @id @default(autoincrement())
+  createdAt   DateTime   @default(now())
+  title       String     @unique
+  description String?
+  status      Status     @default(UNASSIGNED)
+  priorities  Priorities
+  watchers    String[]
+  tags        Tag[]
+  comments    Comment[]
+
+  @@map("tasks")
+}
+
+model Tag {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  title     String   @unique
+  tasks     Task[]
+
+  @@map("tags")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  text      String   @unique
+  task      Task     @relation(fields: [taskId], references: [id])
+  taskId    Int
+
+  @@map("comments")
+}
+
+enum Status {
+  DONE
+  CANCELED
+  ONPROGRESS
+  UNASSIGNED
+}
+
+enum Priorities {
+  URGENT
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum Role {
+  LEAD
+  DEV
+}
